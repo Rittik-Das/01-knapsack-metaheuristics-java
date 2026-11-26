@@ -10,7 +10,7 @@ public class KnapsackProblem {
     private Boolean[] maxValueCombination;
     private int maxProfit;
 
-    public KnapsackProblem(int[] weight, int[] profit, int capacity) throws IllegalArgumentException {
+    public KnapsackProblem(int[] weight, int[] profit, int capacity) {
 
         if (weight.length < 2)
             throw new IllegalArgumentException("At least two items are required.");

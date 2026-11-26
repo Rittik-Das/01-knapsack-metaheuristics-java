@@ -13,14 +13,10 @@ public class KnapsackGA {
 
             KnapsackProblem kp = new KnapsackProblem(weight, profit, capacity);
 
-            Operations.setPopulationSize(50); // (populationSize / 2) % 2 == 0) this must true
-            Operations.setTournamentSize(3); // tournamentSize <= populationSize
-
-            int generations = 100;
-
+            Operations.setPopulationSize(kp);
             Individual[] population = new Individual[Operations.getPopulationSize()];
-            Individual[] parents = new Individual[Operations.getNoOfParents()];
-            Individual[] offsprings = new Individual[Operations.getNoOfOffsprings()];
+
+            Operations.setTournamentSize(3); // tournamentSize <= populationSize
 
             // Initialize Population
             Operations.initializePopulation(kp, population);
@@ -38,7 +34,14 @@ public class KnapsackGA {
             System.out.println("\nBest fitness of initialized population : " + bestFitnessInitialization);
             System.out.print("Best Chromosome of initialized population : ");
             CommonUtils.decode(kp, ansInitialization);
-            System.out.println("\n");
+            System.out.println();
+
+            int generations = 100;
+
+            Individual[] parents = new Individual[Operations.getNoOfParents()];
+            Individual[] offsprings = new Individual[Operations.getNoOfOffsprings()];
+
+            System.out.println("----- Generation wise fitness -----\n");
 
             for (int i = 1; i <= generations; i++) {
 
@@ -82,12 +85,15 @@ public class KnapsackGA {
                 System.out.println();
             }
 
-            System.out.println("\nMaximum profit : " + kp.getMaxProfit());
+            System.out.println("Maximum profit : " + kp.getMaxProfit());
             System.out.print("Best Chromosome found : ");
             CommonUtils.decode(kp, kp.getMaxValueCombination());
+            System.out.println();
 
         } catch (IllegalArgumentException e) {
             System.out.println("Invalid input : " + e.getMessage());
+        } catch (IllegalStateException e) {
+            System.out.println("Invalid operation : " + e.getMessage());
         }
     }
 }

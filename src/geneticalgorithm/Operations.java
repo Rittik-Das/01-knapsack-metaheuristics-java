@@ -10,7 +10,12 @@ public class Operations {
 
     static Random random = new Random();
 
+    private static final double POPULATION_PERCENTAGE = 0.50;
+
     private static int populationSize;
+    private static int desiredPopulationSize;
+    private static boolean isUpdatedPopulationSize = false;
+
     private static int noOfParents;
     private static int noOfOffsprings;
 
@@ -20,25 +25,66 @@ public class Operations {
         return populationSize;
     }
 
-    public static void setPopulationSize(int populationSize) throws IllegalArgumentException {
+    public static void setPopulationSize(KnapsackProblem kp) {
 
-        if (populationSize < 4)
-            throw new IllegalArgumentException("Population size must be at least 4.");
+        isUpdatedPopulationSize = false;
 
-        Operations.populationSize = populationSize;
+        int noOfElements = kp.getNoOfElements();
+
+        int numberOfPossibleCombinations = Math.powExact(2, noOfElements);
+
+        desiredPopulationSize = (int) (numberOfPossibleCombinations * POPULATION_PERCENTAGE);
+
+        if (desiredPopulationSize < 4)
+            throw new IllegalArgumentException(
+                    "\nDesired population size is insufficient. "
+                            + "At least 4 individuals are required, but the calculated "
+                            + "desired population size is " + desiredPopulationSize + ".");
+
+        Operations.populationSize = desiredPopulationSize;
+
+        System.out.println("\nTotal possible combinations: " + numberOfPossibleCombinations);
+        System.out.println("Desired population size: " + desiredPopulationSize + "\n");
+    }
+
+    private static Individual[] updatePopulationSize(Individual[] population, int actualPopulationSize) {
+
+        if (actualPopulationSize < 4)
+            throw new IllegalArgumentException(
+                    "\nInsufficient valid unique individuals generated to form a population. "
+                            + "At least 4 individuals are required, but only "
+                            + actualPopulationSize + " were generated.");
+
+        Individual[] updatedPopulation = Arrays.copyOf(population, actualPopulationSize);
+
+        Operations.populationSize = actualPopulationSize;
 
         int half = populationSize / 2;
 
         noOfParents = (half % 2 == 0) ? half : half + 1;
 
         noOfOffsprings = noOfParents;
+
+        isUpdatedPopulationSize = true;
+
+        System.out.println("Final Population Size(After population initializasion): " + populationSize);
+
+        return updatedPopulation;
     }
 
     public static int getNoOfParents() {
+        if (!isUpdatedPopulationSize)
+            throw new IllegalStateException(
+                    "Population size has not been updated yet. "
+                            + "Initialize the population first.");
         return noOfParents;
     }
 
     public static int getNoOfOffsprings() {
+        if (!isUpdatedPopulationSize)
+            throw new IllegalStateException(
+                    "Population size has not been updated yet. "
+                            + "Initialize the population first.");
         return noOfOffsprings;
     }
 
@@ -46,7 +92,7 @@ public class Operations {
         return tournamentSize;
     }
 
-    public static void setTournamentSize(int tournamentSize) throws IllegalArgumentException {
+    public static void setTournamentSize(int tournamentSize) {
 
         if (tournamentSize < 1 || tournamentSize > populationSize)
             throw new IllegalArgumentException("Tournament size must be between 1 and population size.");
@@ -54,7 +100,7 @@ public class Operations {
         Operations.tournamentSize = tournamentSize;
     }
 
-    public static void initializePopulation(KnapsackProblem kp, Individual[] population) {
+    public static Individual[] initializePopulation(KnapsackProblem kp, Individual[] population) {
 
         int[] weight = kp.getWeight();
         int[] profit = kp.getProfit();
@@ -62,10 +108,15 @@ public class Operations {
         int capacity = kp.getCapacity();
 
         int count = 0;
+        int attempts = 0;
+        int maxAttempts = Operations.desiredPopulationSize * 1000;
 
         Set<List<Boolean>> uniqueSamples = new HashSet<>();
 
-        while (count < populationSize) {
+        while (count < desiredPopulationSize && attempts < maxAttempts) {
+
+            attempts++;
+
             Boolean[] sampleChromosome = new Boolean[noOfElements];
             int totalWeightOfSample = 0;
             int fitnessOfSample = 0;
@@ -96,6 +147,11 @@ public class Operations {
             }
             count++;
         }
+
+        System.out.println("Initialization attempts: " + attempts);
+        System.out.println("Successfully initialized individuals: " + count);
+
+        return updatePopulationSize(population, count);
     }
 
     public static void selectParent(Individual[] population, Individual[] parents) {
@@ -273,4 +329,5 @@ public class Operations {
             }
         }
     }
+
 }
